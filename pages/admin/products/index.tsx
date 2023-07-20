@@ -2,8 +2,8 @@ import React from 'react'
 import { NextPage } from 'next'
 import NextLink from "next/link";
 import { AdminLayout } from '../../../components/layouts'
-import { CategoryOutlined, ConfirmationNumberOutlined } from '@mui/icons-material'
-import { CardMedia, Grid, Link } from '@mui/material'
+import { AddOutlined, CategoryOutlined, ConfirmationNumberOutlined } from '@mui/icons-material'
+import { Box, Button, CardMedia, Grid, Link } from '@mui/material'
 import { DataGrid, GridColDef, GridRenderCellParams } from '@mui/x-data-grid'
 import useSWR from 'swr'
 import { IProduct } from '../../../interfaces'
@@ -72,6 +72,15 @@ const ProductsPage: NextPage = () => {
       subTitle={'Listado de productos'}
       icon={ <CategoryOutlined />}
     >
+      <Box display="flex" justifyContent="end" sx={{ mb: 2 }}>
+        <Button
+          startIcon={ <AddOutlined />}
+          color="secondary"
+          href="/admin/products/new"
+        >
+          Crear producto
+        </Button>
+      </Box>
       <Grid container sx={{ mt: 5 }}>
         <Grid item xs={12} sx={{ height: 650, width: "100%" }}>
           <DataGrid

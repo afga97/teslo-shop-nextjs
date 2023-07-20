@@ -30,6 +30,8 @@ import {
   TextField,
 } from "@mui/material";
 import { useForm } from "react-hook-form";
+import { tesloClientApi } from "../../../api";
+import { Product } from "../../../models";
 
 const validTypes = ["shirts", "pants", "hoodies", "hats"];
 const validGender = ["men", "women", "kid", "unisex"];
@@ -56,6 +58,7 @@ interface Props {
 const ProductAdminPage: FC<Props> = ({ product }) => {
 
   const [newTagsValue, setNewTagsValue] = useState('')
+  const [isSaving, setIsSaving] = useState(false)
 
   const { register, handleSubmit, formState:{ errors }, getValues, setValue, watch } = useForm<FormData>({
     defaultValues: product
@@ -91,7 +94,25 @@ const ProductAdminPage: FC<Props> = ({ product }) => {
 
   };
 
-  const onSubmit = ( formData: FormData) => {
+  const onSubmit = async ( formData: FormData) => {
+    if (formData.images.length < 2) return;
+    setIsSaving(true);
+    try {
+      const { data } = await tesloClientApi({
+        url: '/admin/products',
+        method: 'PUT',
+        data: formData
+      })
+      console.log(data)
+      if (!formData._id) {
+        // TODO recargar el navegador
+      } else {
+        setIsSaving(false)
+      }
+    } catch (error) {
+      console.log("Ocurrio un error al guardar la información")
+      setIsSaving(false)
+    }
 
   }
   
@@ -103,12 +124,10 @@ const ProductAdminPage: FC<Props> = ({ product }) => {
     setValue('sizes', [...currentSizes, size], { shouldValidate: true })
   }
 
-  
-
   return (
     <AdminLayout
       title={"Producto"}
-      subTitle={`Editando: ${product.title}`}
+      subTitle={ product._id ? `Editando: ${product.title}` : 'Crear producto'}
       icon={<DriveFileRenameOutline />}
     >
       <form onSubmit={ handleSubmit(onSubmit)}>
@@ -118,6 +137,7 @@ const ProductAdminPage: FC<Props> = ({ product }) => {
             startIcon={<SaveOutlined />}
             sx={{ width: "150px" }}
             type="submit"
+            disabled= {isSaving}
           >
             Guardar
           </Button>
@@ -330,7 +350,17 @@ const ProductAdminPage: FC<Props> = ({ product }) => {
 export const getServerSideProps: GetServerSideProps = async ({ query }) => {
   const { slug = "" } = query;
 
-  const product = await dbProducts.getProductBySlug(slug.toString());
+  let product: IProduct | null;
+
+  if (slug == 'new') {
+    const tempProduct = JSON.parse( JSON.stringify(new Product() ) )
+    delete tempProduct._id
+    tempProduct.images = ['img1.jpg', 'img2.jpg']
+    product = tempProduct
+  } else {
+    product = await dbProducts.getProductBySlug(slug.toString());
+  }
+
 
   if (!product) {
     return {

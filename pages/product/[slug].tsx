@@ -130,7 +130,6 @@ const PageProductSlug: NextPage<Props> = ({ product }) => {
 
 export const getStaticPaths: GetStaticPaths = async (ctx) => {
   const slugs = await getAllProductSlugs();
-  console.log("SLUGS", slugs)
   return {
     paths: slugs.map(({ slug }) => ({
       params: { slug },
