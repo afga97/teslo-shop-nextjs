@@ -10,6 +10,10 @@ export const getProductBySlug = async (slug: string): Promise<IProduct | null > 
 
   // TODO: 
   // procesamiento al momento de subir las imagenes
+  product.images = product.images.map( image => {
+    return image.includes('http') ? image : `${ process.env.HOST_NAME}products/${ image }`
+  });
+
   return JSON.parse(JSON.stringify(product))
 }
 

@@ -26,9 +26,17 @@ const getProducts = async (req: NextApiRequest, res: NextApiResponse<Data>) => {
   const products = await Product.find()
     .sort({ title: 'asc' })
     .lean()
+
+  const updatedProducts: any = products.map( product => {
+    product.images = product.images.map( image => {
+        return image.includes('http') ? image : `${ process.env.HOST_NAME}products/${ image }`
+    });
+    return updatedProducts;
+  })
+
   await db.disconnect()
 
-  res.status(200).json(products)
+  res.status(200).json(updatedProducts)
 }
 const updateProduct = async (req: NextApiRequest, res: NextApiResponse<Data>) => {
   
@@ -75,7 +83,7 @@ const createProduct = async (req: NextApiRequest, res: NextApiResponse<Data>) =>
   try {
     await db.connect()
     const productExist = await Product.findOne({ slug: req.body.slug })
-    if (!productExist) {
+    if (productExist) {
       return res.status(400).json({ message: 'Ya existe un producto con el slug' })
     }
     const product = new Product(req.body)

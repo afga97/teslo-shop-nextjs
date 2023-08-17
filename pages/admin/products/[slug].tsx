@@ -1,4 +1,4 @@
-import React, { FC, useEffect, useState } from "react";
+import React, { ChangeEvent, FC, useEffect, useRef, useState } from "react";
 import { GetServerSideProps } from "next";
 import { AdminLayout } from "../../../components/layouts";
 import { IProduct } from "../../../interfaces";
@@ -32,6 +32,7 @@ import {
 import { useForm } from "react-hook-form";
 import { tesloClientApi } from "../../../api";
 import { Product } from "../../../models";
+import { useRouter } from "next/router";
 
 const validTypes = ["shirts", "pants", "hoodies", "hats"];
 const validGender = ["men", "women", "kid", "unisex"];
@@ -56,6 +57,9 @@ interface Props {
 }
 
 const ProductAdminPage: FC<Props> = ({ product }) => {
+
+  const router = useRouter()
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
   const [newTagsValue, setNewTagsValue] = useState('')
   const [isSaving, setIsSaving] = useState(false)
@@ -94,18 +98,25 @@ const ProductAdminPage: FC<Props> = ({ product }) => {
 
   };
 
+  const onFileSelected = ({ target }: ChangeEvent<HTMLInputElement>) => {
+    if (!target.files || target.files.length === 0) {
+      return
+    }
+  }
+
   const onSubmit = async ( formData: FormData) => {
     if (formData.images.length < 2) return;
     setIsSaving(true);
     try {
       const { data } = await tesloClientApi({
         url: '/admin/products',
-        method: 'PUT',
+        method: formData._id ? 'PUT': 'POST',
         data: formData
       })
       console.log(data)
       if (!formData._id) {
         // TODO recargar el navegador
+        router.replace(`/admin/products/`)
       } else {
         setIsSaving(false)
       }
@@ -310,9 +321,18 @@ const ProductAdminPage: FC<Props> = ({ product }) => {
                 fullWidth
                 startIcon={<UploadOutlined />}
                 sx={{ mb: 3 }}
+                onClick={ () => fileInputRef.current?.click()}
               >
                 Cargar imagen
               </Button>
+              <input
+                ref={ fileInputRef } 
+                type="file"
+                multiple
+                accept='image/png, image/gif, image/jpeg'
+                style= {{ display: 'none' }}
+                onChange={ onFileSelected }
+              />
 
               <Chip
                 label="Es necesario al 2 imagenes"

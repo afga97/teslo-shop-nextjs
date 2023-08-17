@@ -17,9 +17,9 @@ const columns: GridColDef[] = [
     headerName: "Pagada",
     width: 300,
     renderCell: ({ row }: GridRenderCellParams) => {
-      return row.isPais 
+      return row.isPaid 
         ? (<Chip variant='outlined' label='Pagada' color="success"/>) 
-        : (<Chip variant='outlined' label='Pagada' color="error"/>) 
+        : (<Chip variant='outlined' label='No paga' color="error"/>) 
     }
   },
   { field: "inStock", headerName: "No.Productos", align: 'center' },
